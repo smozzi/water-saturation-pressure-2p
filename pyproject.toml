@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "water-sat-pressure-2p"
+version = "0.1.0"
+description = "Two-pole saturated vapor pressure of water with closed-form inverse."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Sébastien Mozzi" }
+]
+requires-python = ">=3.11"
+dependencies = [
+  "numpy>=1.23"
+]
+
+[project.optional-dependencies]
+dev = [
+  "matplotlib>=3.7",
+  "iapws>=1.5",
+  "pytest>=7.4"
+]
+
+[tool.pytest.ini_options]
+addopts = "-q"
+pythonpath = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/wsp2p"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "src",
+  "tests",
+  "src/wsp2p/coeffs.json",
+  "notebooks",
+  "docs",
+  "CITATION.cff"
+]

@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+title: water-sat-pressure-2p
+message: >
+  If you use water-sat-pressure-2p, please cite this software package.
+authors:
+  - family-names: Mozzi
+    given-names: Sébastien
+keywords:
+  - saturated vapor pressure
+  - humidity
+  - supercooled water
+license: Apache 2.0
+version: 0.1.0
+url: https://github.com/smozzi/water-saturation-pressure-2p
+doi: ""
+preferred-citation:
+  type: software
+  title: water-sat-pressure-2p
+  authors:
+    - family-names: Mozzi
+      given-names: Sébastien
+  year: 2025
+  url: https://github.com/smozzi/water-saturation-pressure-2p
