@@ -9,16 +9,15 @@ import pytest
 
 from wsp2p import T_from_e_water, esat_water_hpa
 
-GRID = np.arange(-40.0, 100.0001, 0.05, dtype=np.float64)
+GRID = np.linspace(-40.0, 100.0, 2801, dtype=np.float64)
 
-# Reference relative-error targets taken from docs/figures/benchmark_table.md (2025-11-14)
+# Reference relative-error targets taken from docs/figures/benchmark_table.md (endpoint-inclusive benchmark)
 # (rows covering -40–0.01 °C and 0.01–100 °C) with a 5% safety margin.
 BENCHMARK_MARGIN = 1.05
-WARM_RMSE_PCT = 0.011010 * BENCHMARK_MARGIN
-WARM_MAX_PCT = 0.043330 * BENCHMARK_MARGIN
-SC_RMSE_PCT = 0.086061 * BENCHMARK_MARGIN
+WARM_RMSE_PCT = 0.01105 * BENCHMARK_MARGIN
+WARM_MAX_PCT = 0.04345 * BENCHMARK_MARGIN
+SC_RMSE_PCT = 0.086008 * BENCHMARK_MARGIN
 SC_MAX_PCT = 0.339598 * BENCHMARK_MARGIN
-EPS = np.finfo(np.float64).eps
 
 
 def test_inverse_accuracy():
@@ -55,7 +54,6 @@ def _iapws_saturation_water(T_c: np.ndarray) -> np.ndarray:
 
     T_k = T_c + 273.15
     T_k = T_k.clip(273.16, 373.15)
-    out = np.full_like(T_c, np.nan, dtype=np.float64)
     vals = []
     for T_val in T_k:
         vals.append(IAPWS95(T=T_val, x=0).P * 1.0e4)  # MPa -> hPa
@@ -82,8 +80,8 @@ def _murphy_koop_water(T_c: np.ndarray) -> np.ndarray:
 
 
 @pytest.mark.skipif(not _iapws_available(), reason="iapws not installed")
-def test_accuracy_against_references():
-    warm_T = np.arange(0.01, 100.0001, 0.05, dtype=np.float64)
+def test_accuracy_against_iapws():
+    warm_T = np.append(np.arange(0.01, 100.0, 0.05, dtype=np.float64), 100.0)
     warm_ref = _iapws_saturation_water(warm_T)
     warm_model = esat_water_hpa(warm_T)
     mask = np.isfinite(warm_ref)
@@ -96,7 +94,9 @@ def test_accuracy_against_references():
     assert warm_rmse < WARM_RMSE_PCT
     assert warm_max < WARM_MAX_PCT
 
-    cold_T = np.arange(-40.0, 0.0, 0.05, dtype=np.float64)
+
+def test_accuracy_against_murphy_koop():
+    cold_T = np.append(np.arange(-40.0, 0.01, 0.05, dtype=np.float64), 0.01)
     cold_ref = _murphy_koop_water(cold_T)
     cold_model = esat_water_hpa(cold_T)
     cold_rel_err = (cold_model - cold_ref) / cold_ref * 100.0
@@ -104,3 +104,20 @@ def test_accuracy_against_references():
     cold_max = float(np.max(np.abs(cold_rel_err)))
     assert cold_rmse < SC_RMSE_PCT
     assert cold_max < SC_MAX_PCT
+
+
+def test_primary_range_accuracy_against_murphy_koop():
+    temps = np.linspace(-25.0, 0.0, 1001)
+    ref = _murphy_koop_water(temps)
+    err = (esat_water_hpa(temps) / ref - 1.0) * 100.0
+    assert np.sqrt(np.mean(err**2)) < 0.00193 * BENCHMARK_MARGIN
+    assert np.max(np.abs(err)) < 0.00339 * BENCHMARK_MARGIN
+
+
+@pytest.mark.skipif(not _iapws_available(), reason="iapws not installed")
+def test_primary_range_accuracy_against_iapws():
+    temps = np.linspace(0.01, 60.0, 301)
+    ref = _iapws_saturation_water(temps)
+    err = (esat_water_hpa(temps) / ref - 1.0) * 100.0
+    assert np.sqrt(np.mean(err**2)) < 0.00012 * BENCHMARK_MARGIN
+    assert np.max(np.abs(err)) < 0.00028 * BENCHMARK_MARGIN
