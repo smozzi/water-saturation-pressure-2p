@@ -1,0 +1,11 @@
+{
+  "degree": 3,
+  "E0": 1.8102749197,
+  "b": 147.45412559,
+  "a1": 10.715664579,
+  "a2": 4.1962110938,
+  "a3": 1.4533223391,
+  "domain_c": {"min": 0.01, "max": 100.0},
+  "reference": "IAPWS-95",
+  "fit_objective": "maximum absolute relative pressure error"
+}

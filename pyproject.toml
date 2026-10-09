@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "water-sat-pressure-2p"
-version = "0.1.0"
-description = "Two-pole saturated vapor pressure of water with closed-form inverse."
+version = "0.4.0"
+description = "Quadratic saturation pressure of liquid water and ice with closed-form inverses."
 readme = "README.md"
 license = { text = "Apache-2.0" }
 authors = [
@@ -23,6 +23,12 @@ dev = [
   "pytest>=7.4"
 ]
 
+fit = [
+  "scipy>=1.10",
+  "iapws>=1.5",
+  "matplotlib>=3.7"
+]
+
 [tool.pytest.ini_options]
 addopts = "-q"
 pythonpath = ["src"]
@@ -36,6 +42,7 @@ include = [
   "tests",
   "src/wsp2p/coeffs.json",
   "notebooks",
+  "scripts/venv.sh",
   "docs",
   "CITATION.cff"
 ]

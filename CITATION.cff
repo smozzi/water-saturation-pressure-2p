@@ -9,8 +9,9 @@ keywords:
   - saturated vapor pressure
   - humidity
   - supercooled water
+  - ice sublimation
 license: Apache 2.0
-version: 0.1.0
+version: 0.4.0
 url: https://github.com/smozzi/water-saturation-pressure-2p
 doi: ""
 preferred-citation:
@@ -19,5 +20,5 @@ preferred-citation:
   authors:
     - family-names: Mozzi
       given-names: Sébastien
-  year: 2025
+  year: 2026
   url: https://github.com/smozzi/water-saturation-pressure-2p

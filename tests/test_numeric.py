@@ -1,4 +1,4 @@
-"""Numerical regression tests for the two-pole saturation formulation."""
+"""Numerical regression tests for the four-coefficient saturation formulation."""
 
 from __future__ import annotations
 
@@ -14,10 +14,10 @@ GRID = np.linspace(-40.0, 100.0, 2801, dtype=np.float64)
 # Reference relative-error targets taken from docs/figures/benchmark_table.md (endpoint-inclusive benchmark)
 # (rows covering -40–0.01 °C and 0.01–100 °C) with a 5% safety margin.
 BENCHMARK_MARGIN = 1.05
-WARM_RMSE_PCT = 0.01105 * BENCHMARK_MARGIN
-WARM_MAX_PCT = 0.04345 * BENCHMARK_MARGIN
-SC_RMSE_PCT = 0.086008 * BENCHMARK_MARGIN
-SC_MAX_PCT = 0.339598 * BENCHMARK_MARGIN
+WARM_RMSE_PCT = 0.011071 * BENCHMARK_MARGIN
+WARM_MAX_PCT = 0.043494 * BENCHMARK_MARGIN
+SC_RMSE_PCT = 0.086786 * BENCHMARK_MARGIN
+SC_MAX_PCT = 0.341670 * BENCHMARK_MARGIN
 
 
 def test_inverse_accuracy():
@@ -110,8 +110,8 @@ def test_primary_range_accuracy_against_murphy_koop():
     temps = np.linspace(-25.0, 0.0, 1001)
     ref = _murphy_koop_water(temps)
     err = (esat_water_hpa(temps) / ref - 1.0) * 100.0
-    assert np.sqrt(np.mean(err**2)) < 0.00193 * BENCHMARK_MARGIN
-    assert np.max(np.abs(err)) < 0.00339 * BENCHMARK_MARGIN
+    assert np.sqrt(np.mean(err**2)) < 0.001830 * BENCHMARK_MARGIN
+    assert np.max(np.abs(err)) < 0.002650 * BENCHMARK_MARGIN
 
 
 @pytest.mark.skipif(not _iapws_available(), reason="iapws not installed")
@@ -119,5 +119,5 @@ def test_primary_range_accuracy_against_iapws():
     temps = np.linspace(0.01, 60.0, 301)
     ref = _iapws_saturation_water(temps)
     err = (esat_water_hpa(temps) / ref - 1.0) * 100.0
-    assert np.sqrt(np.mean(err**2)) < 0.00012 * BENCHMARK_MARGIN
-    assert np.max(np.abs(err)) < 0.00028 * BENCHMARK_MARGIN
+    assert np.sqrt(np.mean(err**2)) < 0.000092 * BENCHMARK_MARGIN
+    assert np.max(np.abs(err)) < 0.000161 * BENCHMARK_MARGIN

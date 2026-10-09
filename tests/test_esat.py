@@ -31,23 +31,24 @@ def test_pressure_conversion_roundtrip():
     np.testing.assert_allclose(hpa_to_pa(hpa), pressures_pa)
 
 
+# Regression values independently evaluated with 50-digit Decimal arithmetic.
 @pytest.mark.parametrize(
     "temp_c, expected",
     [
-        (-40.0, 0.18976374741735924),
-        (-20.0, 1.2550003635784304),
-        (-5.0, 4.217682579377076),
-        (0.0, 6.112103132923173),
-        (15.0, 17.05794023929115),
-        (30.0, 42.469730025405646),
-        (60.0, 199.46414287870633),
-        (100.0, 1013.7393292898188),
+        (-40.0, 0.1897676661191643),
+        (-20.0, 1.2550092325736795),
+        (-5.0, 4.217693996937082),
+        (0.0, 6.112114464992923),
+        (15.0, 17.057945988932545),
+        (30.0, 42.469717680585056),
+        (60.0, 199.46402141608965),
+        (100.0, 1013.7388627281676),
     ],
 )
 
-def test_esat_water_matches_reference_table(temp_c, expected):
+def test_esat_water_matches_regression_table(temp_c, expected):
     computed = esat_water_hpa(temp_c)
-    np.testing.assert_allclose(computed, expected, rtol=5e-4)
+    np.testing.assert_allclose(computed, expected, rtol=1e-11)
 
 
 def test_dln_esat_matches_finite_difference():
@@ -62,7 +63,7 @@ def test_dln_esat_matches_finite_difference():
 
 def test_T_from_e_water_known_pressures():
     e_values = np.array([0.5, 6.112103132923173, 50.0])
-    expected_T = np.array([-30.199977745169534, 0.0, 32.87425471625106])
+    expected_T = np.array([-30.200109657212924, -2.55130568176993e-05, 32.87426106343108])
     recovered = T_from_e_water(e_values)
     np.testing.assert_allclose(recovered, expected_T, rtol=0.0, atol=2e-6)
 
@@ -73,11 +74,26 @@ def test_T_from_e_water_invalid_inputs():
     assert np.isnan(out[0]) and np.isnan(out[1]) and np.isnan(out[2])
 
 
+def test_inverse_is_stable_near_zero_temperature():
+    temperatures = np.array([-1e-6, -1e-9, 0.0, 1e-9, 1e-6])
+    recovered = T_from_e_water(esat_water_hpa(temperatures))
+    np.testing.assert_allclose(recovered, temperatures, rtol=0.0, atol=1e-13)
+
+
+def test_inverse_handles_zero_quadratic_coefficient(monkeypatch):
+    import wsp2p.esat as module
+
+    monkeypatch.setattr(module, 'coeffs', {**coeffs, 'c': 0.0})
+    temperatures = np.linspace(-40.0, 100.0, 101)
+    recovered = module.T_from_e_water(module.esat_water_hpa(temperatures))
+    np.testing.assert_allclose(recovered, temperatures, rtol=0.0, atol=1e-12)
+
+
 def test_rh_percent_behaves_expected():
     temp = np.array([22.0, 10.0, 5.0])
     e_inputs = np.array(
         [
-            21.691850907414768,  # 82% relative humidity at 22 °C
+            21.691850302240194,  # 82% relative humidity at 22 °C
             50.0,  # supersaturation must remain visible
             -5.0,  # invalid negative vapor pressure
         ]
@@ -87,11 +103,11 @@ def test_rh_percent_behaves_expected():
     np.testing.assert_allclose(result, expected)
 
 
-def test_dewpoint_from_T_RH_matches_reference():
+def test_dewpoint_from_T_RH_regression():
     temp = np.array([30.0])
     rh = np.array([35.0])
     dew = dewpoint_c_from_T_RH(temp, rh)
-    expected = np.array([12.880684704072316])
+    expected = np.array([12.880672917971367])
     np.testing.assert_allclose(dew, expected, atol=1e-6)
 
 
@@ -99,7 +115,7 @@ def test_specific_humidity_expected_value():
     temp = np.array([28.0])
     rh = np.array([65.0])
     pressure = np.array([950.0])
-    expected = np.array([0.01625755739318492])
+    expected = np.array([0.016257553502927877])
     q = specific_humidity_kg_per_kg(temp, rh, pressure)
     np.testing.assert_allclose(q, expected, rtol=0.0, atol=1e-12)
 
